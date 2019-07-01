@@ -1,24 +1,29 @@
 package com.luv2code.springsecurity.demo.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.core.userdetails.User;
+
+import javax.sql.DataSource;
 
 @Configuration
 @EnableWebSecurity
 public class DemoSecurityConfig extends WebSecurityConfigurerAdapter {
 
+    private DataSource securityDataSource;
+
+    @Autowired
+    protected DemoSecurityConfig(DataSource securityDataSource) {
+        super();
+        this.securityDataSource = securityDataSource;
+    }
+
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        User.UserBuilder userBuilder = User.withDefaultPasswordEncoder();
-
-        auth.inMemoryAuthentication()
-                .withUser(userBuilder.username("John").password("test123").roles("EMPLOYEE"))
-                .withUser(userBuilder.username("Mary").password("test123").roles("EMPLOYEE", "MANAGER"))
-                .withUser(userBuilder.username("Susan").password("test123").roles("EMPLOYEE", "ADMIN"));
+        auth.jdbcAuthentication().dataSource(securityDataSource);
     }
 
     @Override
